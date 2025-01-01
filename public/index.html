@@ -1,29 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-Time Chat with WebSocket</title>
-    <style>
-        #messages {
-            list-style-type: none;
-            padding: 0;
-        }
-        .message {
-            padding: 8px;
-            margin-bottom: 4px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-    </style>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Socket Matrix</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <div class="main-container">
+            <button id="icon-button"></button>
+            <div class="grid-container" id="gridContainer"></div>
+        </div>
 
-<h1>Real-Time Chat</h1>
-<ul id="messages"></ul>
-<input id="messageInput" type="text" placeholder="Type a message" />
-<button id="sendButton">Send</button>
-
-<script src="./script.js"></script>
-</body>
+        <script src="script.js"></script>
+    </body>
 </html>
