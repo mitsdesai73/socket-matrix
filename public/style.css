@@ -12,6 +12,27 @@ body {
     background-color: #f0f0f0;
 }
 
+.main-container {
+    justify-content: flex-end;
+    padding: 20px;
+}
+
+#icon-button {
+    padding: 10px;
+    border: none;
+    font-size: 16px;
+    background-image: url('./rotate-left-solid.svg');
+    background-repeat: no-repeat;
+    background-size: 20px 20px;
+    background-position: left center;
+    padding-left: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+button {
+    padding: 10px;
+}
+
 .grid-container {
     display: grid;
     grid-template-columns: repeat(80, 1fr);
@@ -24,8 +45,8 @@ body {
 .grid-cell {
     width: 100%;
     height: 100%;
-    background-color: #4caf50;  /* Default green color */
-    padding: 5px;  /* Adds padding inside each cell */
+    background-color: #4caf50; /* Default green color */
+    padding: 5px; /* Adds padding inside each cell */
     display: flex;
     justify-content: center;
     align-items: center;

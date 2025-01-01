@@ -10,7 +10,5 @@ const server = http.createServer(app)
 // Start the server
 const PORT = process.env.PORT || 4000
 // Initialize the WebSocket manager and pass the server to it
-const httpServer = server.listen(PORT, () =>
-    console.log(`Listening on ${PORT}`)
-)
+const httpServer = server.listen(PORT, () => console.log(`Listening on ${PORT}`))
 new WebSocketManager(httpServer)

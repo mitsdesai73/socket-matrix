@@ -8,17 +8,17 @@ class WebSocketManager {
     constructor(server) {
         this.wss = new WebSocketServer({ server })
         this.clients = {}
-        this
         this.init()
         this.gridData = []
-        this.populateGrid()
+        this.populateInitialGrid()
+        this.trackCellClickEvents = {}
     }
 
-    populateGrid() {
-        console.log("New Data")
-        this.gridData = new Array(rows)
-            .fill()
-            .map(() => new Array(cols).fill('green'))
+    /**
+     * This function will create 2 dimension array for row and col and store the color
+     */
+    populateInitialGrid() {
+        this.gridData = new Array(rows).fill().map(() => new Array(cols).fill('green'))
     }
     // Initialize the WebSocket server and handle events
     init() {
@@ -40,7 +40,7 @@ class WebSocketManager {
                 this.onDisconnect(ws)
             })
 
-            // send latest grid data to client
+            // send latest grid data to client who just joined
             ws.send(
                 JSON.stringify({
                     type: 'grid_data',
@@ -50,7 +50,50 @@ class WebSocketManager {
         })
     }
 
-    // Handle incoming messages
+    /**
+     * This function will emit `cell_color_changed` events to all the connected clients with the next color.
+     * Also keep track of the click event per user
+     * At the end, it will send undo left count for the current user.
+     */
+
+    onCellClicked(ws, row, col, track = true) {
+        let color = this.gridData[row][col] == 'green' ? 'red' : 'green'
+        this.gridData[row][col] = color
+
+        this.broadcastMessage(ws, {
+            type: 'cell_color_changed',
+            col,
+            row,
+            color,
+        })
+
+        // add to track event for current client
+        if (track) {
+            if (Array.isArray(this.trackCellClickEvents[ws?.id])) {
+                this.trackCellClickEvents[ws?.id].push({
+                    row,
+                    col,
+                })
+            } else {
+                this.trackCellClickEvents[ws?.id] = [
+                    {
+                        row,
+                        col,
+                    },
+                ]
+            }
+        }
+
+        this.sendMessage(ws, {
+            type: 'undo_left_count',
+            undo_left_count: this.trackCellClickEvents[ws?.id]?.length || 0,
+        })
+    }
+
+    /* Handle incoming messages
+     * cell_clicked : when clint click on any cell
+     * unco_clicked : when client click on undo button
+     */
     onMessageReceived(ws, message) {
         try {
             const parsedMessage = JSON.parse(message)
@@ -58,20 +101,17 @@ class WebSocketManager {
 
             switch (type) {
                 case 'cell_clicked': {
-                    let color = this.gridData[row][col]
-                    console.log("Click color", color)
-                    if (color == 'green') {
-                        color = 'red'
-                    } else {
-                        color = 'green'
-                    }
+                    this.onCellClicked(ws, row, col)
+                    break
+                }
 
-                    this.broadcastMessage(ws, {
-                        type: 'cell_color_changed',
-                        col,
-                        row,
-                        color,
-                    })
+                case 'undo_clicked': {
+                    const undoTracks = this.trackCellClickEvents[ws?.id]
+                    if (Array.isArray(undoTracks)) {
+                        const { row: undoRow, col: undoCol } = undoTracks[undoTracks?.length - 1]
+                        undoTracks.pop()
+                        this.onCellClicked(ws, undoRow, undoCol, false)
+                    }
                     break
                 }
 
@@ -87,22 +127,16 @@ class WebSocketManager {
 
     // Broadcast a message to all connected clients
     broadcastMessage(ws, message) {
-        console.log('Broadcasting message:', message)
-
         // Send message to all clients
         Object.values(this.clients).forEach((client) => {
-            if (
-                // client?.id !== ws?.id &&
-                client?.readyState === WebSocket.OPEN
-            ) {
+            if (client?.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify(message))
             }
         })
     }
 
     sendMessage(ws, message) {
-        console.log('Sending message:', message)
-        ws.send(message)
+        ws.send(JSON.stringify(message))
     }
 
     // Handle client disconnection
